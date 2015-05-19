@@ -1,6 +1,7 @@
 
 /**
  * @name TechWobbles
+ * @inspiration stagas - mind swift
  */
 
 var bpm = 130;
