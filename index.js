@@ -207,9 +207,9 @@ DiodeFilter.prototype.run = function(x) {
 
 // patterns
 var hat_pattern = [
-0,1, .5, 1, 0,1, .5, 1 ];
+0, 1, 0, 1, 0, 1, .5, 1 ];
 var crash_pattern = [
-2, 1, .5, .25, 2, 1, .5, .25];
+2, 1, .5, .25];
 
 var melody = [2, 9, 5, 8, 2, 9, 5, 2].map(function(n) {
     return note(n, 2);
@@ -239,32 +239,32 @@ export function dsp(t) {
 
     var n = slide(1 / 4, melody, 32);
 
-    var synth_osc = osc.play(n + tri(24) * 2) + tri(n / 10000);
-    var synth_osc2 = osc2.play(n + tri(24) * 2) + tri(n / 10000);
-    var synth = arp(1 / 16, synth_osc, 1000, 1);
+    var synth_osc = osc.play(n + tri(24) * n/2) + tri(n / 10000);
+    var synth_osc2 = osc2.play(n*.5 + saw(4) * 16) + sin(n / 10000);
+    var synth = arp(1 / 16, synth_osc, 500, 1);
     var synth2 = arp(1 / 8, synth_osc, 100, 1);
-    var synth3 = arp(1 / n, synth_osc2, 100, 1);
+    var synth3 = arp(1 / (n*2), synth_osc2, 100, 1);
 
     filter.set_fc(0.5 + (tri(1 / 2) * 0.02));
     var b = slide(1 / 8, melody, 32);
-    var bass = bass_osc.play(b / 8);
+    var bass = bass_osc.play(b / 4);
     bass = filter.run(bass * 2);
     bass = clip(bass * 10);
     bass = bass * (0.8 - ((tri(8) * 0.5)));
-    var bass2 = bass2_osc.play(b / 16);
-    bass2 = filter2.run(bass2 * 1);
+    var bass2 = bass2_osc.play(b / 4);
+    bass2 = filter2.run(bass2 * 2);
     bass2 = clip(bass2 * 2);
-    bass2 = bass2 * (.8 - ((tri(4) * .5)));
+    bass2 = bass2 * (2 - ((tri(2) * 2)));
     var bass3 = bass3_osc.play(b / 4);
     bass3 = filter2.run(bass3 * 1);
     bass3 = clip(bass3 * n);
-    bass3 = bass3 * (.8 - ((tri(8) * .5)));
+    bass3 = bass3 * (.2 - ((tri(8) * .5)));
 
     var kick = arp(1 / 4, 50, 40, 0);
     var kick2 = arp(1 / 4, 80, 80, 0);
 
-    var hat = sequence(1 / 8, hat_pattern) * arp(1 / 8, hat_osc.play(hat_note) + noise * 1.8, 2, 70);
-    var crash = sequence(1 / 16, crash_pattern) * arp(1 / 8, hat_osc.play(hat_note) + noise * 2, 20, 20);
+    var hat = sequence(1 / 8, hat_pattern) * arp(1 / 16, hat_osc.play(hat_note) + noise * 1.8, 2, 70);
+    var crash = sequence(1 / 8, crash_pattern) * arp(1 / 8, hat_osc.play(hat_note) + noise * 2, 20, 20);
 
     var gotBass = (t - (hardcodedTimer * 2)) / hardcodedTimer; // start fading in the bass after we've been around twice
     if (gotBass < 0) gotBass = 0;
@@ -283,24 +283,24 @@ export function dsp(t) {
     
     if (t > (hardcodedTimer * 6)) { // after 6 times, start alternating the tap and the crunch in the synth
       if (Math.floor(t) % 2 === 0 ) {
-        gotSynth3 = (t%2)/2;
+        gotSynth3 = 1-(t%2)/2;
       }
       else {
-        gotSynth3 = 1-(t%2)/2;
-        
+        gotSynth3 = (t%2)/2;
       }
+      //gotSynth3 = 1;
     }
     
-    return 0.5 * (
-      2 * (synth2 * gotSynth2)
-    + 1 * (synth3 * gotSynth3)
-    + 2 * (synth * gotSynth)
-    + 3 * (kick * gotKick)
-   // + 2 * (kick2 * gotKick)
-    + 0.35 * (hat * gotHat)
-    + .5 * (bass * gotBass)
-    + 2 * (bass2 * gotBass)
-    + .2 * (bass3 * gotBass)
-    + .10 * (crash * gotBass)
+    return 0.2 * (
+      5 * (synth2 * gotSynth2)
+    + 2 * (synth3 * gotSynth3)
+    + 3 * (synth * gotSynth)
+    + 5 * (kick * gotKick)
+    + 5 * (kick2 * gotKick)
+    + .3 * (hat * gotHat)
+    + .6 * (bass * gotBass)
+    + .5 * (bass2 * gotBass)
+    + .3 * (bass3 * gotBass)
+    + .15 * (crash * gotBass)
     );
 }
